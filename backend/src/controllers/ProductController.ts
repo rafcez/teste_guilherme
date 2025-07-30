@@ -1,35 +1,53 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import ProductService from '../services/ProductService';
 
 class ProductController {
-  public async create(req: Request, res: Response): Promise<Response> {
-    const { name, category, price } = req.body;
-    return res.status(201).json({ 
-      message: 'Produto criado com sucesso!', 
-      data: { name, category, price } 
-    });
+  public async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const product = await ProductService.create(req.body);
+      res.status(201).json(product);
+    } catch (err) {
+      next(err);
+    }
   }
 
-  public async listAll(req: Request, res: Response): Promise<Response> {
-    return res.status(200).json({ message: 'Listando todos os produtos.' });
+  public async listAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const products = await ProductService.getAll();
+      res.json(products);
+    } catch (err) {
+      next(err);
+    }
   }
 
-  public async getById(req: Request, res: Response): Promise<Response> {
-    const { id } = req.params;
-    return res.status(200).json({ message: `Buscando o produto com id: ${id}` });
+  public async getById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const product = await ProductService.getById(req.params.id);
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      res.json(product);
+    } catch (err) {
+      next(err);
+    }
   }
 
-  public async update(req: Request, res: Response): Promise<Response> {
-    const { id } = req.params;
-    const { name, category, price } = req.body;
-    return res.status(200).json({ 
-      message: `Produto com id: ${id} atualizado.`,
-      data: { name, category, price }
-    });
+  public async update(req: Request, res: Response, next: NextFunction) {
+    try {
+      const product = await ProductService.update(req.params.id, req.body);
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      res.json(product);
+    } catch (err) {
+      next(err);
+    }
   }
 
-  public async delete(req: Request, res: Response): Promise<Response> {
-    const { id } = req.params;
-    return res.status(200).json({ message: `Produto com id: ${id} deletado.` });
+  public async delete(req: Request, res: Response, next: NextFunction) {
+    try {
+      const product = await ProductService.delete(req.params.id);
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
   }
 }
 
