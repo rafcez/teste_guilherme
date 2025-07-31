@@ -1,11 +1,12 @@
-import { Button } from "@/components/ui/button"
+import ProductDataTable from "./pages/ProductListPage";
 
 function App() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center">
-      <Button>Click me</Button>
+    <div className="container mx-auto py-10">
+      <h1 className="text-3xl font-bold mb-6">Gerenciamento de Produtos</h1>
+      <ProductDataTable />
     </div>
-  )
+  );
 }
 
 export default App
