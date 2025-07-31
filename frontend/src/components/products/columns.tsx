@@ -56,8 +56,6 @@ export const columns: ColumnDef<Product>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const product = row.original
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -68,11 +66,6 @@ export const columns: ColumnDef<Product>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(product.id)}
-            >
-              Copiar ID do Produto
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Editar Produto</DropdownMenuItem>
             <DropdownMenuItem className="text-red-600">Excluir Produto</DropdownMenuItem>
