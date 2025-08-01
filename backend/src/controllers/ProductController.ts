@@ -1,3 +1,4 @@
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { NextFunction, Request, Response } from 'express';
 import ProductService from '../services/ProductService';
 
@@ -6,7 +7,13 @@ class ProductController {
     try {
       const product = await ProductService.create(req.body);
       res.status(201).json(product);
-    } catch (err) {
+    } catch (err: any) {
+      if (
+        err instanceof PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        return res.status(409).json({ message: 'Produto com este nome e categoria já existe.' });
+      }
       next(err);
     }
   }
@@ -35,9 +42,15 @@ class ProductController {
   public async update(req: Request, res: Response, next: NextFunction) {
     try {
       const product = await ProductService.update(req.params.id, req.body);
-      if (!product) return res.status(404).json({ message: 'Product not found' });
+      res.status(200).json(product);
       res.json(product);
     } catch (err) {
+      if (
+        err instanceof PrismaClientKnownRequestError && 
+        err.code === 'P2002'
+      ) {
+        return res.status(409).json({ message: 'Produto com este nome já existente.' });
+      }
       next(err);
     }
   }

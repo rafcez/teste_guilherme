@@ -37,9 +37,11 @@ export function ProductDialog({
     product
 }: ProductDialogProps) {
     const [form, setForm] = useState<ProductFormData>(defaultFormState);
+    const [apiError, setApiError] = useState<string | null>(null);
 
     useEffect(() => {
         if (open) {
+            setApiError(null);
             if (product) {
                 setForm({
                     name: product.name,
@@ -67,6 +69,7 @@ export function ProductDialog({
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        setApiError(null);
         try {
             if (product) {
                 await updateProduct({ ...product, ...form });
@@ -75,9 +78,12 @@ export function ProductDialog({
             }
             onSave();
             onOpenChange(false);
-        } catch (err) {
-            console.error("Failed to save product:", err);
-            alert("Erro ao salvar produto");
+        } catch (err: any) {
+            if (err.response && err.response.status === 409) {
+                setApiError(err.response.data.message);
+            } else {
+                setApiError("Ocorreu um erro inesperado. Tente novamente.");
+            }
         }
     };
 
@@ -118,6 +124,12 @@ export function ProductDialog({
                             <Input id="price" type="string" value={form.price} onChange={handleChange} className="col-span-3" required step="0.01" />
                         </div>
                     </div>
+
+                    {apiError && (
+                        <div className="text-center text-sm text-red-500 bg-red-100 my-2 py-2 rounded-md">
+                            {apiError}
+                        </div>
+                    )}
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
                         <Button type="submit">{product ? "Salvar Alterações" : "Salvar Produto"}</Button>

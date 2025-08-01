@@ -29,8 +29,15 @@ export async function createProduct(product: Omit<Product, 'id' | 'created_at'>)
         body: JSON.stringify(product),
     });
     if (!response.ok) {
-        throw new Error('Erro ao criar produto');
+        const errorData = await response.json().catch(() => ({}));
+        const error: any = new Error(errorData.message || 'Erro ao criar produto');
+        error.response = {
+            status: response.status,
+            data: errorData,
+        };
+        throw error;
     }
+
     return await response.json();
 }
 
@@ -43,7 +50,13 @@ export async function updateProduct(product: Omit<Product, 'created_at'>) {
         body: JSON.stringify(product),
     });
     if (!response.ok) {
-        throw new Error('Erro ao atualizar produto');
+        const errorData = await response.json().catch(() => ({}));
+        const error: any = new Error(errorData.message || 'Erro ao atualizar produto');
+        error.response = {
+            status: response.status,
+            data: errorData,
+        };
+        throw error;
     }
     return await response.json();
 }
