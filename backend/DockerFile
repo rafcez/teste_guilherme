@@ -26,6 +26,14 @@ COPY --from=builder /app/src/routes ./src/routes
 
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+COPY --from=builder /app/prisma ./prisma
+
+COPY entrypoint.sh .
+
+RUN chmod +x ./entrypoint.sh
+
 EXPOSE 3000
+
+ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["node", "dist/server.js"]
