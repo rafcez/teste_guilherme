@@ -1,18 +1,19 @@
 import {
     getCoreRowModel,
     getFilteredRowModel,
-    getPaginationRowModel,
     getSortedRowModel,
     useReactTable,
     type ColumnFiltersState,
+    type PaginationState,
     type SortingState
-} from "@tanstack/react-table"
-import * as React from "react"
+} from "@tanstack/react-table";
+import { PlusCircle } from "lucide-react";
+import * as React from "react";
 
-
-import { deleteProduct, fetchProducts } from "@/api/productService"
-import { ProductDialog } from "@/components/products/dialog"
-import { ProductTable } from "@/components/products/table"
+import { deleteProduct, fetchProducts } from "@/api/productService";
+import { getColumns } from "@/components/products/columns";
+import { ProductDialog } from "@/components/products/dialog";
+import { ProductTable } from "@/components/products/table";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -22,32 +23,33 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import type { Product } from "@/models/Products"
-import { PlusCircle } from "lucide-react"
-import { getColumns } from "@/components/products/columns"
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { Product } from "@/models/Products";
 
 export default function ProductDataTable() {
     const [data, setData] = React.useState<Product[]>([]);
     const [loading, setLoading] = React.useState<boolean>(true);
-    const [sorting, setSorting] = React.useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-
+    const [sorting, setSorting] = React.useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+    const [{ pageIndex, pageSize }, setPagination] = React.useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    });
+    const [pageCount, setPageCount] = React.useState(0);
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [selectedProduct, setSelectedProduct] = React.useState<Product | undefined>(undefined);
     const [productToDelete, setProductToDelete] = React.useState<Product | null>(null);
 
-
     const fetchAllProducts = async () => {
         try {
             setLoading(true);
-            const products = await fetchProducts();
-            setData(products);
+            const response = await fetchProducts(pageIndex + 1, pageSize);
+            setData(response.data);
+            setPageCount(Math.ceil(response.total / pageSize));
         } catch (error) {
             console.error("Failed to fetch products:", error);
-            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -55,8 +57,7 @@ export default function ProductDataTable() {
 
     React.useEffect(() => {
         fetchAllProducts();
-    }, []);
-
+    }, [pageIndex, pageSize]);
 
     const handleAddNew = () => {
         setSelectedProduct(undefined);
@@ -92,8 +93,11 @@ export default function ProductDataTable() {
     const table = useReactTable({
         data,
         columns,
+        enableRowSelection: false,
+        manualPagination: true,
+        pageCount: pageCount,
+        onPaginationChange: setPagination,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
         onColumnFiltersChange: setColumnFilters,
@@ -101,8 +105,9 @@ export default function ProductDataTable() {
         state: {
             sorting,
             columnFilters,
+            pagination: { pageIndex, pageSize },
         },
-    })
+    });
 
     return (
         <div className="w-full">
@@ -119,7 +124,7 @@ export default function ProductDataTable() {
                     <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Produto
                 </Button>
             </div>
-            <ProductTable table={table} loading={loading} />
+            <ProductTable table={table} loading={loading} columnsLength={columns.length} />
 
             <ProductDialog
                 open={isDialogOpen}

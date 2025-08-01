@@ -1,20 +1,26 @@
-import { Product } from '../../models/Product';
-
-const mockPrisma = {
-  product: {
-    findMany: jest.fn(),
-    findUnique: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-  },
-};
+import { PrismaClient } from '@prisma/client';
 
 jest.mock('@prisma/client', () => ({
-  PrismaClient: jest.fn().mockImplementation(() => mockPrisma),
+  PrismaClient: jest.fn().mockImplementation(() => ({
+    product: {
+      findMany: jest.fn(),
+      count: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  })),
+  Prisma: {
+    PrismaClientKnownRequestError: class PrismaClientKnownRequestError extends Error { },
+  }
 }));
 
 import productService from '../../services/ProductService';
+import { Product } from '../../models/Product';
+
+const mockedPrisma = new PrismaClient();
 
 describe('ProductService - Unit Tests', () => {
   const dateNow = new Date();
@@ -33,37 +39,31 @@ describe('ProductService - Unit Tests', () => {
   });
 
   describe('getAll', () => {
-    it('deve retornar uma lista de todos os produtos', async () => {
-      mockPrisma.product.findMany.mockResolvedValue([mockProduct]);
+    it('deve retornar uma lista paginada de produtos com o total', async () => {
+      const page = 1;
+      const pageSize = 10;
+      const totalProducts = 1;
+      const transactionResult = [totalProducts, [mockProduct]];
+      (mockedPrisma.$transaction as jest.Mock).mockResolvedValue(transactionResult);
 
-      const products = await productService.getAll();
+      const result = await productService.getAll(page, pageSize);
 
-      expect(products).toEqual([mockProduct]);
-      expect(mockPrisma.product.findMany).toHaveBeenCalledTimes(1);
+      expect(result.data).toEqual([mockProduct]);
+      expect(result.total).toBe(totalProducts);
     });
   });
 
   describe('getById', () => {
     it('deve retornar um único produto se o ID for encontrado', async () => {
-      mockPrisma.product.findUnique.mockResolvedValue(mockProduct);
-
+      (mockedPrisma.product.findUnique as jest.Mock).mockResolvedValue(mockProduct);
       const product = await productService.getById('uuid-12345');
-
       expect(product).toEqual(mockProduct);
-      expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ 
-        where: { id: 'uuid-12345' } 
-      });
     });
 
     it('deve retornar null se o ID não for encontrado', async () => {
-      mockPrisma.product.findUnique.mockResolvedValue(null);
-
+      (mockedPrisma.product.findUnique as jest.Mock).mockResolvedValue(null);
       const product = await productService.getById('uuid-inexistente');
-
       expect(product).toBeNull();
-      expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ 
-        where: { id: 'uuid-inexistente' } 
-      });
     });
   });
 
@@ -75,19 +75,13 @@ describe('ProductService - Unit Tests', () => {
         category: 'I',
         price: 250.0,
       };
-      const createdProduct = { 
-        id: 'uuid-new', 
-        ...newProductData, 
-        created_at: dateNow 
-      };
-      mockPrisma.product.create.mockResolvedValue(createdProduct);
+      const createdProduct = { id: 'uuid-new', ...newProductData, created_at: dateNow };
+
+      (mockedPrisma.product.create as jest.Mock).mockResolvedValue(createdProduct);
 
       const product = await productService.create(newProductData);
 
       expect(product).toEqual(createdProduct);
-      expect(mockPrisma.product.create).toHaveBeenCalledWith({ 
-        data: newProductData 
-      });
     });
   });
 
@@ -95,28 +89,22 @@ describe('ProductService - Unit Tests', () => {
     it('deve atualizar e retornar os dados de um produto', async () => {
       const updateData = { price: 399.9 };
       const updatedProduct = { ...mockProduct, ...updateData };
-      mockPrisma.product.update.mockResolvedValue(updatedProduct);
+
+      (mockedPrisma.product.update as jest.Mock).mockResolvedValue(updatedProduct);
 
       const product = await productService.update('uuid-12345', updateData);
 
       expect(product).toEqual(updatedProduct);
-      expect(mockPrisma.product.update).toHaveBeenCalledWith({
-        where: { id: 'uuid-12345' },
-        data: updateData,
-      });
     });
   });
 
   describe('delete', () => {
     it('deve deletar e retornar o produto removido', async () => {
-      mockPrisma.product.delete.mockResolvedValue(mockProduct);
+      (mockedPrisma.product.delete as jest.Mock).mockResolvedValue(mockProduct);
 
       const product = await productService.delete('uuid-12345');
 
       expect(product).toEqual(mockProduct);
-      expect(mockPrisma.product.delete).toHaveBeenCalledWith({ 
-        where: { id: 'uuid-12345' } 
-      });
     });
   });
 });

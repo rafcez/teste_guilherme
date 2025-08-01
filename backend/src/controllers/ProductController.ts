@@ -13,8 +13,10 @@ class ProductController {
 
   public async listAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const products = await ProductService.getAll();
-      res.json(products);
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 10;
+      const paginatedProducts = await ProductService.getAll(page, pageSize);
+      res.json(paginatedProducts);
     } catch (err) {
       next(err);
     }

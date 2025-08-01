@@ -2,9 +2,21 @@ import type { Product } from "@/models/Products";
 
 const API_BASE_URL = 'http://localhost:3000/api/v1/products';
 
-export async function fetchProducts(): Promise<Product[]> {
-    const response = await fetch(API_BASE_URL);
-    const data = await response.json();
+export interface PaginatedProductsResponse {
+    data: Product[];
+    total: number;
+    page: number;
+    pageSize: number;
+}
+
+export async function fetchProducts(page: number, pageSize: number): Promise<PaginatedProductsResponse> {
+    const url = `${API_BASE_URL}?page=${page}&pageSize=${pageSize}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Erro ao buscar produtos: ${response.statusText}`);
+    }
+
+    const data: PaginatedProductsResponse = await response.json();
     return data;
 }
 

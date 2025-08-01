@@ -4,9 +4,34 @@ import { Product } from '../models/Product';
 
 const prisma = new PrismaClient();
 
+export type PaginatedProductsResponse = {
+  data: Product[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 export default {
-  async getAll(): Promise<Product[]> {
-    return prisma.product.findMany();
+  async getAll(page: number, pageSize: number): Promise<PaginatedProductsResponse> {
+    const skip = (page - 1) * pageSize;
+    const take = pageSize;
+    const [total, products] = await prisma.$transaction([
+      prisma.product.count(),
+      prisma.product.findMany({
+        skip: skip,
+        take: take,
+        orderBy: {
+          created_at: 'desc'
+        }
+      })
+    ]);
+
+    return {
+      data: products,
+      total: total,
+      page: page,
+      pageSize: pageSize,
+    };
   },
 
   async getById(id: string): Promise<Product | null> {
