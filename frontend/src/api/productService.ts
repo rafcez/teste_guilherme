@@ -36,7 +36,7 @@ export async function updateProduct(product: Omit<Product, 'created_at'>) {
     return await response.json();
 }
 
-export async function deleteProduct(id: number) {
+export async function deleteProduct(id: string) {
     const response = await fetch(`${API_BASE_URL}/${id}`, {
         method: 'DELETE',
     });

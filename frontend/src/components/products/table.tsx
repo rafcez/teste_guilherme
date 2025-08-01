@@ -1,4 +1,3 @@
-import { columns } from "@/components/products/columns"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -10,6 +9,7 @@ import {
 } from "@/components/ui/table"
 import type { Table as ReactTable } from "@tanstack/react-table"
 import { flexRender } from "@tanstack/react-table"
+import { getColumns } from "./columns"
 
 interface ProductTableProps {
     table: ReactTable<any>
@@ -58,7 +58,7 @@ export function ProductTable({ table, loading }: ProductTableProps) {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                                    <TableCell colSpan={getColumns.length} className="h-24 text-center">
                                         Nenhum resultado encontrado.
                                     </TableCell>
                                 </TableRow>
