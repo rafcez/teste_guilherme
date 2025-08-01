@@ -1,17 +1,19 @@
 import { PrismaClient } from '@prisma/client';
 
+const prismaMock = {
+  product: {
+    findMany: jest.fn(),
+    count: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  $transaction: jest.fn(),
+};
+
 jest.mock('@prisma/client', () => ({
-  PrismaClient: jest.fn().mockImplementation(() => ({
-    product: {
-      findMany: jest.fn(),
-      count: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    $transaction: jest.fn(),
-  })),
+  PrismaClient: jest.fn().mockImplementation(() => prismaMock),
   Prisma: {
     PrismaClientKnownRequestError: class PrismaClientKnownRequestError extends Error { },
   }

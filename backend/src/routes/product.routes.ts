@@ -14,17 +14,28 @@ const productRoutes = Router();
  * @swagger
  * /products:
  *   get:
- *     summary: Lista todos os produtos
+ *     summary: Lista todos os produtos de forma paginada
  *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número da página a ser retornada.
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Número de produtos por página.
  *     responses:
  *       200:
- *         description: Sucesso. Retorna uma lista de produtos.
+ *         description: Sucesso. Retorna um objeto com os produtos e informações de paginação.
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Product'
+ *               $ref: '#/components/schemas/PaginatedProductsResponse'
  */
 productRoutes.get('/', ProductController.listAll);
 

@@ -59,6 +59,32 @@ const options: swaggerJsdoc.Options = {
                         },
                     },
                 },
+                PaginatedProductsResponse: {
+                    type: 'object',
+                    properties: {
+                        data: {
+                            type: 'array',
+                            items: {
+                                $ref: '#/components/schemas/Product'
+                            }
+                        },
+                        total: {
+                            type: 'integer',
+                            description: 'Número total de produtos no banco de dados.',
+                            example: 100
+                        },
+                        page: {
+                            type: 'integer',
+                            description: 'Número da página atual.',
+                            example: 1
+                        },
+                        pageSize: {
+                            type: 'integer',
+                            description: 'Número de itens por página.',
+                            example: 10
+                        }
+                    }
+                }
             },
         },
     },
