@@ -49,7 +49,7 @@ export default function ProductDataTable() {
             setData(response.data);
             setPageCount(Math.ceil(response.total / pageSize));
         } catch (error) {
-            console.error("Failed to fetch products:", error);
+            console.error("Erro ao carregar produtos:", error);
         } finally {
             setLoading(false);
         }
@@ -75,7 +75,7 @@ export default function ProductDataTable() {
             await deleteProduct(productToDelete.id);
             fetchAllProducts();
         } catch (error) {
-            console.error("Failed to delete product:", error);
+            console.error("Erro ao deletar produto:", error);
         } finally {
             setProductToDelete(null);
         }

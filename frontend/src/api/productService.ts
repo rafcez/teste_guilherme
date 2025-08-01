@@ -29,7 +29,7 @@ export async function createProduct(product: Omit<Product, 'id' | 'created_at'>)
         body: JSON.stringify(product),
     });
     if (!response.ok) {
-        throw new Error('Failed to create product');
+        throw new Error('Erro ao criar produto');
     }
     return await response.json();
 }
@@ -43,7 +43,7 @@ export async function updateProduct(product: Omit<Product, 'created_at'>) {
         body: JSON.stringify(product),
     });
     if (!response.ok) {
-        throw new Error('Failed to update product');
+        throw new Error('Erro ao atualizar produto');
     }
     return await response.json();
 }
@@ -53,14 +53,14 @@ export async function deleteProduct(id: string) {
         method: 'DELETE',
     });
     if (!response.ok) {
-        throw new Error('Failed to delete product');
+        throw new Error('Erro ao deletar produto');
     }
 }
 
 export async function getProductById(id: string) {
     const response = await fetch(`${API_BASE_URL}/${id}`);
     if (!response.ok) {
-        throw new Error('Product not found');
+        throw new Error('Produto não encontrado');
     }
     return await response.json();
 }
